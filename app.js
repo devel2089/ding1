@@ -136,6 +136,15 @@ app.get('/sqlquery', function (req, res) {
         
 });
 
+//lastupload
+
+app.get('/lastupload',function(req,res){
+    pool.query('select "DateTime"::date from public."Transactions" order by "DateTime" desc limit 1',function(err,result){
+        if (err){console.log (err)
+        }
+        res.render('lastupload.ejs',{datedata:result.rows})
+    })
+})
 
 
 
@@ -189,7 +198,7 @@ app.post('/stream', (req, res) => {
                 fileup2.pipe(streamFile2);
                 client.query(`DO $$
                             BEGIN
-                            IF EXISTS (select * from public."Transactions" where "OrderID" = (select "OrderID" from public."testtable" where "OrderID" is not null order by "DateTime" ASC LIMIT 1))
+                            IF EXISTS (select * from public."Transactions" where "DateTime" = (select "DateTime" from public."testtable" where "OrderID" is not null order by "DateTime" ASC LIMIT 1))
                             THEN DELETE from public."testtable";
                             ELSE insert into public."Transactions" select *, current_timestamp from public."testtable";
                             END IF;
@@ -209,7 +218,7 @@ app.post('/stream', (req, res) => {
                 fileup2.pipe(streamFile2);
                 client.query(`DO $$
                             BEGIN
-                            IF EXISTS (select * from public."Transactions" where "OrderID" = (select "OrderID" from public."testtable" where "OrderID" is not null order by "DateTime" ASC LIMIT 1))
+                            IF EXISTS (select * from public."Transactions" where "DateTime" = (select "DateTime" from public."testtable" where "OrderID" is not null order by "DateTime" ASC LIMIT 1))
                             THEN DELETE from public."testtable";
                             ELSE insert into public."Transactions" select *, current_timestamp from public."testtable";
                             END IF;
