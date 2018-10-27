@@ -175,45 +175,27 @@ app.post('/stream', (req, res) => {
     // Init Upload
     const upload = multer({
         storage: storage
-    }).fields([{name:'fbai'},{name:'testtable'}])
+    }).fields([{ name: 'fbai' }, { name: 'testtable' }, { name: 'newInv' }, { name: 'fbaSent' }])
 
     app.post('/upload', (req, res) => {
         upload(req, res, (err) => {
             // DELETE from the tables 
-        
-            client.query(`DELETE from public."testtable";`)
-            client.query(`DELETE from public."fbai";`)
+
             /*beginning file upload 
             /*postgres from*/
-            
-            if (typeof (req.files['fbai']) != 'undefined' && typeof (req.files['testtable']) != 'undefined') {
-            
+            if (typeof (req.files['fbai']) != "undefined") {
+                client.query(`DELETE from public."fbai";`)
+
                 var fileup1 = streamifier.createReadStream(req.files['fbai'][0].buffer)
-                var fileup2 = streamifier.createReadStream(req.files['testtable'][0].buffer)
-                var streamFile1 = client.query(copyFrom(`COPY fbai FROM STDIN With CSV HEADER DELIMITER ','`));
 
-                fileup1.pipe(streamFile1);
-                var streamFile2 = client.query(copyFrom(`COPY testtable FROM STDIN With CSV HEADER DELIMITER ','`));
-
-                fileup2.pipe(streamFile2);
-                client.query(`DO $$
-                            BEGIN
-                            IF EXISTS (select * from public."Transactions" where "DateTime" = (select "DateTime" from public."testtable" where "OrderID" is not null order by "DateTime" ASC LIMIT 1))
-                            THEN DELETE from public."testtable";
-                            ELSE insert into public."Transactions" select *, current_timestamp from public."testtable";
-                            END IF;
-                            END
-                            $$;
-                            `)
-
-            } else if (typeof (req.files['fbai']) != "undefined") {
-                var fileup1 = streamifier.createReadStream(req.files['fbai'][0].buffer)
-              
                 var streamFile1 = client.query(copyFrom(`COPY fbai FROM STDIN With CSV HEADER DELIMITER ','`));
                 fileup1.pipe(streamFile1);
-            } else if (typeof (req.files['testtable']) != "undefined") {
+            }
+            if (typeof (req.files['testtable']) != "undefined") {
+                client.query(`DELETE from public."testtable";`)
+
                 var fileup2 = streamifier.createReadStream(req.files['testtable'][0].buffer)
-               
+
                 var streamFile2 = client.query(copyFrom(`COPY testtable FROM STDIN With CSV HEADER DELIMITER ','`));
                 fileup2.pipe(streamFile2);
                 client.query(`DO $$
@@ -226,14 +208,66 @@ app.post('/stream', (req, res) => {
                             $$;
                             `)
             }
+            if (typeof (req.files['newInv']) != "undefined") {
+                client.query(`DELETE from public."testpurchase";`)
 
+                var fileup3 = streamifier.createReadStream(req.files['newInv'][0].buffer)
+
+                var streamFile3 = client.query(copyFrom(`COPY newInv FROM STDIN With CSV HEADER DELIMITER ','`));
+                fileup3.pipe(streamFile3);
+                client.query(`DO
+                $do$ BEGIN IF EXISTS (select * from vinylpurchaselog where purchasedate >= (select min(purchasedate) from testpurchase) LIMIT 1)
+                THEN DELETE from testpurchase;
+                ELSE insert into vinylpurchaselog select * from testpurchase;
+	            update vinylinventory
+	            set quantity = i.quantity+vinylinventory.quantity
+	            from testpurchase as i
+	            where vinylinventory.rollcode = i.rollcode;
+                END IF;
+                END
+                $do$;`)
+
+
+
+            }
+            if (typeof (req.files['newInv']) != "undefined") {
+
+                client.query(`DELETE from public."testfbasent";`)
+
+                var fileup4 = streamifier.createReadStream(req.files['fbaSent'][0].buffer)
+
+                var streamFile4 = client.query(copyFrom(`COPY fbaSent FROM STDIN With CSV HEADER DELIMITER ','`));
+                fileup4.pipe(streamFile4);
+                client.query(`DO $do$ BEGIN IF EXISTS (select * from fbasent where sentdate >= (select min(sentdate) from testfbasent) LIMIT 1) THEN DELETE from testfbasent; ELSE insert into fbasent select * from testfbasent; update vinylinventory
+                set quantity = vinylinventory.quantity-i.rollused
+                    from (select s.rollcode
+                ,round(sum(s.total)/r.sheetequalvant,3) as rollused
+                from (
+                select v.fnsku, f.rollcode
+                ,(sum(v.expectedquantity) * f.sheetequalvant) as total
+                from testfbasent v
+                left join vinylproduct f on f.fnsku = v.fnsku
+                group by v.fnsku, f.rollcode, f.sheetequalvant
+                ) s
+                left join vinylroll r on r.rollcode = s.rollcode
+                group by s.rollcode, r.sheetequalvant
+                order by s.rollcode) as i
+                    where vinylinventory.rollcode = i.rollcode;
+                END IF;
+                END
+                $do$;
+                `)
+
+
+
+            }
 
             if (err) {
                 res.redirect('./', {
 
                 });
             } else {
-		
+
                 res.redirect('./');
             }
 
