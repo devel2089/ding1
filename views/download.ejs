@@ -16,10 +16,9 @@
 </head>
 
 <body>
-
+<
     <div class="container">
         <h1> File Upload</h1>
-        <%= typeof msg != 'undefined'? msg : '' %>
         <form action="/upload" method="POST" enctype="multipart/form-data">
             
             <div class="file-field input-field">
@@ -30,6 +29,8 @@
                 <div class="file-path-wrapper">
                     <input class="file-path validate" type="text">
                 </div>
+                </div>
+                
 
                 <div class="file-field input-field">
                     <div class="btn blue">
@@ -38,6 +39,7 @@
                     </div>
                     <div class="file-path-wrapper">
                         <input class="file-path validate" type="text">
+                </div>
                 </div>
 
                 <div class="file-field input-field">
@@ -48,6 +50,7 @@
                     <div class="file-path-wrapper">
                         <input class="file-path validate" type="text">
                 </div>
+                </div>
 
                 <div class="file-field input-field">
                     <div class="btn blue">
@@ -57,16 +60,19 @@
                     <div class="file-path-wrapper">
                         <input class="file-path validate" type="text">
                 </div>
-
+                </div>
                 
 
                 <button type="submit" class="btn">Submit</button>
+                
         </form>
+   
 
 
-    </div>
+    
 
-    <br><br>
+    <br><br><br>
+
     <h1>Query</h1>
 
     <!--QUERY DROPDOWN MENU-->
@@ -79,9 +85,10 @@
             </option>
             <%}%>
         </select>
+        
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
-
+</div>
 </body>
 
 </html>
