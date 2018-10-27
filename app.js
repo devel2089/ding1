@@ -198,15 +198,16 @@ app.post('/stream', (req, res) => {
 
                 var streamFile2 = client.query(copyFrom(`COPY testtable FROM STDIN With CSV HEADER DELIMITER ','`));
                 fileup2.pipe(streamFile2);
-                client.query(`DO $$
-                            BEGIN
-                            IF EXISTS (select * from public."Transactions" where "DateTime" = (select "DateTime" from public."testtable" where "OrderID" is not null order by "DateTime" ASC LIMIT 1))
-                            THEN DELETE from public."testtable";
-                            ELSE insert into public."Transactions" select *, current_timestamp from public."testtable";
-                            END IF;
-                            END
-                            $$;
-                            `)
+                client.query(`DO 
+                    $$
+                    BEGIN
+                    IF EXISTS (select * from public."Transactions" where to_char("DateTime", 'YYYY-MM-DD') = 
+                            (select to_char("DateTime", 'YYYY-MM-DD') from public."testtable" where "OrderID" is not null order by "DateTime" ASC LIMIT 1) LIMIT 1)
+                    THEN DELETE from public."testtable";
+                    ELSE insert into public."Transactions" select *, current_timestamp from public."testtable";
+                    END IF;
+                    END
+                    $$;`)
             }
             if (typeof (req.files['newInv']) != "undefined") {
                 client.query(`DELETE from public."testpurchase";`)
