@@ -175,7 +175,7 @@ app.post('/stream', (req, res) => {
     // Init Upload
     const upload = multer({
         storage: storage
-    }).fields([{ name: 'fbai' }, { name: 'testtable' }, { name: 'newInv' }, { name: 'fbaSent' }])
+    }).fields([{ name: 'fbai' }, { name: 'testtable' }, { name: 'newinv' }, { name: 'fbasent' }])
 
     app.post('/upload', (req, res) => {
         upload(req, res, (err) => {
