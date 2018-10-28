@@ -212,7 +212,7 @@ app.post('/stream', (req, res) => {
             }
             if (typeof (req.files['newinv']) != "undefined") {
                 client.query(`DELETE from public."testpurchase";`)
-                console.log(req.files.values());
+               
 
                 var fileup3 = streamifier.createReadStream(req.files['newinv'][0].buffer)
                 
