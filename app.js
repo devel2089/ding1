@@ -216,7 +216,7 @@ app.post('/stream', (req, res) => {
 
                 var fileup3 = streamifier.createReadStream(req.files['newinv'][0].buffer)
                 
-                var streamFile3 = client.query(copyFrom(`COPY newinv FROM STDIN With CSV HEADER DELIMITER ','`));
+                var streamFile3 = client.query(copyFrom(`COPY testpurchase FROM STDIN With CSV HEADER DELIMITER ','`));
                 fileup3.pipe(streamFile3);
               
 
@@ -229,7 +229,7 @@ app.post('/stream', (req, res) => {
 
                 var fileup4 = streamifier.createReadStream(req.files['fbasent'][0].buffer)
 
-                var streamFile4 = client.query(copyFrom(`COPY fbasent FROM STDIN With CSV HEADER DELIMITER ','`));
+                var streamFile4 = client.query(copyFrom(`COPY testfbasent FROM STDIN With CSV HEADER DELIMITER ','`));
                 fileup4.pipe(streamFile4);
                 client.query(`DO $do$ BEGIN IF EXISTS (select * from fbasent where sentdate >= (select min(sentdate) from testfbasent) LIMIT 1) THEN DELETE from testfbasent; ELSE insert into fbasent select * from testfbasent; update vinylinventory
                 set quantity = vinylinventory.quantity-i.rollused
