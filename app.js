@@ -193,7 +193,7 @@ app.post('/stream', (req, res) => {
             }
             if (typeof (req.files['testtable']) != "undefined") {
                 client.query(`DELETE from public."testtable";`)
-
+                
                 var fileup2 = streamifier.createReadStream(req.files['testtable'][0].buffer)
 
                 var streamFile2 = client.query(copyFrom(`COPY testtable FROM STDIN With CSV HEADER DELIMITER ','`));
@@ -210,12 +210,13 @@ app.post('/stream', (req, res) => {
                     END
                     $$;`)
             }
-            if (typeof (req.files['newInv']) != "undefined") {
+            if (typeof (req.files['newinv']) != "undefined") {
                 client.query(`DELETE from public."testpurchase";`)
+                console.log(req.files.values());
 
-                var fileup3 = streamifier.createReadStream(req.files['newInv'][0].buffer)
-
-                var streamFile3 = client.query(copyFrom(`COPY newInv FROM STDIN With CSV HEADER DELIMITER ','`));
+                var fileup3 = streamifier.createReadStream(req.files['newinv'][0].buffer)
+                
+                var streamFile3 = client.query(copyFrom(`COPY newinv FROM STDIN With CSV HEADER DELIMITER ','`));
                 fileup3.pipe(streamFile3);
                 client.query(`DO
                 $do$ BEGIN IF EXISTS (select * from vinylpurchaselog where purchasedate >= (select min(purchasedate) from testpurchase) LIMIT 1)
@@ -232,7 +233,7 @@ app.post('/stream', (req, res) => {
 
 
             }
-            if (typeof (req.files['newInv']) != "undefined") {
+            if (typeof (req.files['fbaSent']) != "undefined") {
 
                 client.query(`DELETE from public."testfbasent";`)
 
