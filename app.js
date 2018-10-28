@@ -223,13 +223,13 @@ app.post('/stream', (req, res) => {
 
 
             }
-            if (typeof (req.files['fbaSent']) != "undefined") {
+            if (typeof (req.files['fbasent']) != "undefined") {
 
                 client.query(`DELETE from public."testfbasent";`)
 
-                var fileup4 = streamifier.createReadStream(req.files['fbaSent'][0].buffer)
+                var fileup4 = streamifier.createReadStream(req.files['fbasent'][0].buffer)
 
-                var streamFile4 = client.query(copyFrom(`COPY fbaSent FROM STDIN With CSV HEADER DELIMITER ','`));
+                var streamFile4 = client.query(copyFrom(`COPY fbasent FROM STDIN With CSV HEADER DELIMITER ','`));
                 fileup4.pipe(streamFile4);
                 client.query(`DO $do$ BEGIN IF EXISTS (select * from fbasent where sentdate >= (select min(sentdate) from testfbasent) LIMIT 1) THEN DELETE from testfbasent; ELSE insert into fbasent select * from testfbasent; update vinylinventory
                 set quantity = vinylinventory.quantity-i.rollused
