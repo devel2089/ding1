@@ -200,15 +200,26 @@ app.post('/stream', (req, res) => {
                 fileup2.pipe(streamFile2);
                     // check for transactions
                 client.query(`DO 
-                    $$
-                    BEGIN
-                    IF EXISTS (select * from public."Transactions" where to_char("DateTime", 'YYYY-MM-DD') in 
-                            (select to_char("DateTime", 'YYYY-MM-DD') from public."testtable" where "OrderID" is not null order by "DateTime" asc) LIMIT 1)
-                    THEN DELETE from public."testtable";
-                    ELSE insert into public."Transactions" select *, current_timestamp from public."testtable";
-                    END IF;
-                    END
-                    $$;`)
+                            $$
+                            BEGIN
+                            IF EXISTS (select * from public."Transactions" where to_char("DateTime", 'YYYY-MM-DD') in 
+                                    (select to_char("DateTime", 'YYYY-MM-DD') from public."testtable" where "OrderID" is not null order by "DateTime" asc) LIMIT 1)
+                            THEN DELETE from public."testtable";
+                            ELSE insert into public."Transactions" select *, current_timestamp from public."testtable";
+                                update vinylinventory
+                                set quantity = vinylinventory.quantity-i.rollused
+                                from (
+                                    select v.rollcode, round(sum(v.sheetequalvant * t."Quantity")/r.sheetequalvant, 3) as rollused
+                                    from "testtable" t
+                                    inner join vinylproduct v on t."SKU" = v.sku
+                                    and v.fba = false
+                                    inner join vinylroll r on r.rollcode = v.rollcode
+                                    group by v.rollcode, r.sheetequalvant
+                                ) as i
+                                where vinylinventory.rollcode = i.rollcode;
+                            END IF;
+                            END
+                            $$;`)
             }
             if (typeof (req.files['newinv']) != "undefined") {
                 client.query(`DELETE from public."testpurchase";`)
