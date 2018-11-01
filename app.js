@@ -218,20 +218,19 @@ app.post('/stream', (req, res) => {
                 
                 var streamFile3 = client.query(copyFrom(`COPY testpurchase FROM STDIN With CSV HEADER DELIMITER ','`));
                 fileup3.pipe(streamFile3);
-                client.query(`DO
-                    $do$
-                    BEGIN
-                    IF EXISTS (select * from vinylpurchaselog where purchasedate >= (select min(purchasedate) from testpurchase) LIMIT 1)
-                    THEN DELETE from testpurchase;
-                    ELSE insert into vinylpurchaselog select * from testpurchase;
-                        update vinylinventory
-                        set quantity = i.quantity+vinylinventory.quantity
-                        from testpurchase as i
-                        where vinylinventory.rollcode = i.rollcode;
-                    END IF;
-                    END
-                    $do$;
-                    `)
+                    client.query(`DO
+                                $do$
+                                BEGIN
+                                IF EXISTS (select * from vinylpurchaselog where purchasedate >= (select min(purchasedate) from testpurchase) LIMIT 1)
+                                THEN DELETE from testpurchase;
+                                ELSE insert into vinylpurchaselog select * from testpurchase;
+                                    update vinylinventory
+                                    set quantity = i.quantity+vinylinventory.quantity
+                                    from (select rollcode, sum(quantity) as quantity from testpurchase group by rollcode) as i
+                                    where vinylinventory.rollcode = i.rollcode;
+                                END IF;
+                                END
+                                $do$;`)
 
 
 
