@@ -190,6 +190,7 @@ app.post('/stream', (req, res) => {
 
                 var streamFile1 = client.query(copyFrom(`COPY fbai FROM STDIN With CSV HEADER DELIMITER ','`));
                 fileup1.pipe(streamFile1);
+                client.query(`insert into public.fbaidate values (current_timestamp);`);
             }
             if (typeof (req.files['testtable']) != "undefined") {
                 client.query(`DELETE from public."testtable";`)
